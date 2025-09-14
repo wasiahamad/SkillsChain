@@ -174,7 +174,6 @@ export const applyForJob = async (req, res) => {
                 populate: { path: "user", select: "name email" }
             });
 
-
         res.status(201).json({
             message: "Applied successfully",
             success: true,
@@ -384,7 +383,7 @@ export const updateApplicationStatus = async (req, res) => {
 };
 
 
-// Get all appliedjobsbyuser for employer
+// \/ Get all applications for a job
 export const getApplicationsForJob = async (req, res) => {
     try {
         const jobId = req.params.jobId;
@@ -413,6 +412,7 @@ export const getApplicationsForJob = async (req, res) => {
     }
 };
 
+// \/ Get all applications by employer
 export const getEmployerApplications = async (req, res) => {
     try {
         // Find jobs posted by this employer
@@ -448,7 +448,13 @@ export const getUserApplications = async (req, res) => {
     try {
         const userId = req.user._id;
         const applications = await AppliedJob.find({ user: userId }).populate("user").select("-password")
-            .populate("job");
+            .populate("job")
+            .populate("job.employer", "companyName companyDescription website")
+            .sort({ createdAt: -1 });
+
+        if (!applications) {
+            return res.status(404).json({ message: "No applications found for this user", success: false });
+        }
 
         res.status(200).json({ success: true, applications });
     } catch (error) {

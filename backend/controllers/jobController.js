@@ -368,12 +368,13 @@ const createJob = async (req, res) => {
 //   }
 // };
 
+// READ single job
 const getJob = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id)
       .populate("employer", "companyName companyDescription website industry")
       .populate("appliedJobsByUser")
-      .populate("applicants.user", "name email"); // ✅ Include user details
+      .populate("applicants.user" , "name email" ) // ✅ Include user details
 
     if (!job) {
       return res.status(404).json({
@@ -381,6 +382,22 @@ const getJob = async (req, res) => {
         success: false,
       });
     }
+
+    // Check if the job is active
+    if (job.status !== "Active") {
+      return res.status(404).json({
+        message: "Job not found",
+        success: false,
+      });
+    }
+
+    // // Check if the job is expired
+    // if (job.applicationDeadline < new Date()) {
+    //   return res.status(404).json({
+    //     message: "Job not found",
+    //     success: false,
+    //   });
+    // }
 
     res.status(200).json({
       message: "Job fetched successfully",

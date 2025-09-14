@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getJobApplications } from '../../api/api';
 import Loader from '../Common/Loader';
+import { useAuth } from '../../context/AuthContext';
 
 const JobApplications = () => {
     const { jobId } = useParams();
