@@ -1,51 +1,54 @@
-import OpenAI from 'openai';
+import axios from 'axios';
 
-// Initialize OpenAI client
+const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Generate certificate text using AI
+// Generate certificate text using a template (no AI)
 const generateCertificateText = async (skillName, userName, skillLevel) => {
-  try {
-    const prompt = `Generate a professional certificate text for ${userName} who has achieved ${skillLevel} level in ${skillName}. 
-    The certificate should be formal, include details about the skill mastery, and be about 50-100 words.`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        { role: "system", content: "You are a certificate generation assistant. Create professional certificate texts." },
-        { role: "user", content: prompt }
-      ],
-      max_tokens: 200,
-    });
-
-    return completion.choices[0].message.content;
-  } catch (error) {
-    console.error('Error generating certificate text:', error);
-    throw new Error('Failed to generate certificate text');
-  }
+  return `This is to certify that ${userName} has successfully achieved the ${skillLevel} level in ${skillName}. This certificate recognizes their dedication, skill mastery, and commitment to professional growth in this field.`;
 };
 
-// AI job matching
+// Get embeddings from Hugging Face
+async function getEmbeddings(texts) {
+  const response = await axios.post(
+    'https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2',
+    { inputs: texts },
+    {
+      headers: { Authorization: `Bearer ${HUGGINGFACE_API_KEY}` }
+    }
+  );
+  return response.data;
+}
+
+// Cosine similarity function
+function cosineSimilarity(vecA, vecB) {
+  let dotProduct = 0.0;
+  let normA = 0.0;
+  let normB = 0.0;
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+// AI job matching using Hugging Face embeddings
 const matchJobsToCandidate = async (userSkills, jobs) => {
   try {
-    const prompt = `Match the following user skills: ${userSkills.join(', ')} 
-    to these job opportunities: ${jobs.map(job => `${job.title} (Required: ${job.skillsRequired.join(', ')})`).join('; ')}.
-    Return a JSON array with job IDs and match percentages.`;
+    // Combine user skills into one string
+    const userSkillsText = userSkills.join(', ');
+    // Get embedding for user skills
+    const userEmbedding = (await getEmbeddings([userSkillsText]))[0];
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "You are a job matching assistant. Analyze skills and match them to job requirements." },
-        { role: "user", content: prompt }
-      ],
-      max_tokens: 500,
-    });
-
-    const matches = JSON.parse(completion.choices[0].message.content);
-    return matches;
+    // For each job, get embedding for required skills and calculate similarity
+    const results = [];
+    for (const job of jobs) {
+      const jobSkillsText = job.skillsRequired.join(', ');
+      const jobEmbedding = (await getEmbeddings([jobSkillsText]))[0];
+      const similarity = cosineSimilarity(userEmbedding, jobEmbedding);
+      results.push({ jobId: job._id || job.id, matchPercent: Math.round(similarity * 100) });
+    }
+    return results;
   } catch (error) {
     console.error('Error matching jobs:', error);
     throw new Error('Failed to match jobs');

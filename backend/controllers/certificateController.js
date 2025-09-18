@@ -20,12 +20,17 @@ const issueCertificate = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    
+
+    // Check for valid Ethereum address
+    if (!user.ethAddress || typeof user.ethAddress !== 'string' || !user.ethAddress.startsWith('0x') || user.ethAddress.length !== 42) {
+      return res.status(400).json({ message: 'User Ethereum address is missing or invalid. Please update user profile.' });
+    }
+
     const skill = await Skill.findById(skillId);
     if (!skill) {
       return res.status(404).json({ message: 'Skill not found' });
     }
-    
+
     // Check if skill belongs to user
     if (skill.owner.toString() !== userId) {
       return res.status(400).json({ message: 'Skill does not belong to this user' });
@@ -37,7 +42,21 @@ const issueCertificate = async (req, res) => {
       user.name, 
       skill.level
     );
-    
+
+    // Generate certificate hash for blockchain
+    const certHash = `${user._id}-${req.employer._id}-${skill._id}-${Date.now()}`;
+
+    // Issue certificate on blockchain using user's Ethereum address
+    const blockchainResult = await issueBlockchainCertificate(
+      user.ethAddress,
+      certHash
+    );
+
+    // Only proceed if blockchainResult is valid and certHash is not null
+    if (!blockchainResult || !certHash) {
+      return res.status(500).json({ message: 'Blockchain certificate issue failed.' });
+    }
+
     // Create certificate record
     const certificate = await Certificate.create({
       title: title || `${skill.name} Certificate`,
@@ -45,21 +64,9 @@ const issueCertificate = async (req, res) => {
       issuedBy: req.employer._id,
       skill: skillId,
       description,
-      expirationDate
+      expirationDate,
+      blockchainHash: certHash
     });
-    
-    // Generate certificate hash for blockchain
-    const certHash = `${user._id}-${req.employer._id}-${skill._id}-${Date.now()}`;
-    
-    // Issue certificate on blockchain
-    const blockchainResult = await issueBlockchainCertificate(
-      user._id.toString(),
-      certHash
-    );
-    
-    // Update certificate with blockchain hash
-    certificate.blockchainHash = certHash;
-    await certificate.save();
     
     // Generate PDF certificate
     const pdfFileName = `certificate-${certificate._id}.pdf`;

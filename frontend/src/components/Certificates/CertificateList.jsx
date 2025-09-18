@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// import { getUserCertificates } from '../../api/api';
+import { getUserCertificates } from '../../api/api';
 import Loader from '../Common/Loader';
 
 const CertificateList = () => {

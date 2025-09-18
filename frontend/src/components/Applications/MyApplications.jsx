@@ -7,8 +7,7 @@ const MyApplications = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [job, setJob] = useState(null);
-    const { id } = useParams();
+    // Remove job state and useParams for job details
 
     useEffect(() => {
         const fetchApplications = async () => {
@@ -26,22 +25,10 @@ const MyApplications = () => {
 
         
 
-        fetchJobDetails();
         fetchApplications();
     }, []);
 
-    const fetchJobDetails = async () => {
-        try {
-            const response = await getJobDetails(id);
-            setJob(response.data.job || null);
-            console.log(response.data);
-        } catch (error) {
-            setError('Failed to fetch job details');
-            console.error('Error fetching job details:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Remove fetchJobDetails, use application.job directly
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -109,7 +96,7 @@ const MyApplications = () => {
                                             <div className="text-sm font-medium text-gray-900">{application.job.title}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-500">{job?.employer?.companyName}</div>
+                                            <div className="text-sm text-gray-500">{application.job?.employer?.companyName}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm text-gray-500">

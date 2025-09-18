@@ -17,7 +17,7 @@ const generateToken = (id) => {
 // Register user
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+  const { name, email, password, ethAddress } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -27,7 +27,16 @@ const registerUser = async (req, res) => {
       });
     }
 
-    const user = await User.create({ name: name, email: email, password: password, skills: [], certificates: [], resume: '', appliedJobs: [] });
+    const user = await User.create({
+      name: name,
+      email: email,
+      password: password,
+      skills: [],
+      certificates: [],
+      resume: '',
+      appliedJobs: [],
+      ethAddress: ethAddress || ''
+    });
 
     if (user) {
       res.status(201).json({
@@ -40,7 +49,8 @@ const registerUser = async (req, res) => {
           skills: user.skills,
           certificates: user.certificates,
           resume: user.resume,
-          appliedJobs: user.appliedJobs
+          appliedJobs: user.appliedJobs,
+          ethAddress: user.ethAddress
         },
         token: generateToken(user._id),
       });
@@ -176,10 +186,11 @@ const updateUserProfile = async (req, res) => {
       });
     }
 
-    // ✅ Update basic fields
-    if (req.body.name) user.name = req.body.name;
-    if (req.body.email) user.email = req.body.email;
-    if (req.body.resume) user.resume = req.body.resume;
+  // ✅ Update basic fields
+  if (req.body.name) user.name = req.body.name;
+  if (req.body.email) user.email = req.body.email;
+  if (req.body.resume) user.resume = req.body.resume;
+  if (req.body.ethAddress) user.ethAddress = req.body.ethAddress;
 
     // ✅ Handle password update
     if (req.body.password) {

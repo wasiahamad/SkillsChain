@@ -21,7 +21,7 @@ const Home = () => {
                             </p>
                             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                                 <Link
-                                    to="/register"
+                                    to={localStorage.getItem("token") ? "/dashboard" : "/register"}
                                     className="btn-primary px-6 py-3 rounded-lg font-bold text-lg text-center"
                                 >
                                     GET STARTED

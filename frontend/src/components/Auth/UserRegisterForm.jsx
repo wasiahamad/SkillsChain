@@ -8,6 +8,7 @@ const UserRegisterForm = () => {
         email: "",
         password: "",
         confirmPassword: "",
+        ethAddress: ""
     });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -38,6 +39,7 @@ const UserRegisterForm = () => {
                     name: formData.name,
                     email: formData.email,
                     password: formData.password,
+                    ethAddress: formData.ethAddress
                 },
                 false
             );
@@ -67,6 +69,7 @@ const UserRegisterForm = () => {
             )}
 
             <form onSubmit={handleSubmit}>
+
                 <div className="mb-4">
                     <label className="block text-gray-700 mb-2" htmlFor="name">
                         Full Name
@@ -94,6 +97,22 @@ const UserRegisterForm = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
+                    />
+                </div>
+
+                <div className="mb-4">
+                    <label className="block text-gray-700 mb-2" htmlFor="ethAddress">
+                        Ethereum Address
+                    </label>
+                    <input
+                        type="text"
+                        id="ethAddress"
+                        name="ethAddress"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                        value={formData.ethAddress}
+                        onChange={handleChange}
+                        required
+                        placeholder="0x..."
                     />
                 </div>
 

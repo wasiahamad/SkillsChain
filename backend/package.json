@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Backend for SkillChain - Blockchain-based skill verification",
   "main": "server.js",
-  "type": "module",
+
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
@@ -23,7 +23,8 @@
     "nodemailer": "^6.9.4",
     "openai": "^4.4.0",
     "pdfkit": "^0.13.0",
-    "web3": "^4.2.0"
+    "solc": "^0.8.30",
+    "web3": "^4.16.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

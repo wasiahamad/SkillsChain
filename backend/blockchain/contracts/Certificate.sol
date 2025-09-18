@@ -1,7 +1,4 @@
-// Placeholder for blockchain/contracts/Certificate.sol
-// backend/blockchain/contracts/Certificate.sol
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 contract Certificate {
@@ -24,7 +21,9 @@ contract Certificate {
         emit CertificateIssued(certCount, _title, _to, msg.sender);
     }
 
-    function verifyCertificate(uint _id) public view returns (Cert memory) {
-        return certificates[_id];
+    // Get the title (string) for a certificate
+    function getCertificateTitle(uint _id) public view returns (string memory) {
+        return certificates[_id].title;
     }
 }
+            // REMOVED verifyCertificate function. Use mapping getter and getCertificateTitle instead.

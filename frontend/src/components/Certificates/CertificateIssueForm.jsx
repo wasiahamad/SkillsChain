@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getEmployerJobs, issueCertificate } from '../../api/api';
+import { getEmployerJobs, issueCertificate, getJobApplications, getUserSkills } from '../../api/api';
 
 const CertificateIssueForm = () => {
     const navigate = useNavigate();
@@ -8,10 +8,12 @@ const CertificateIssueForm = () => {
     const [formData, setFormData] = useState({
         jobId: '',
         userId: '',
-        skillName: '',
+        skillId: '',
         title: '',
         description: '',
     });
+    const [userSkills, setUserSkills] = useState([]);
+    const [applicants, setApplicants] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [fetchLoading, setFetchLoading] = useState(true);
@@ -20,7 +22,7 @@ const CertificateIssueForm = () => {
         const fetchJobs = async () => {
             try {
                 const response = await getEmployerJobs();
-                setJobs(response.data);
+                setJobs(Array.isArray(response.data) ? response.data : response.data.jobs || []);
             } catch (error) {
                 setError('Failed to fetch jobs');
                 console.error('Error fetching jobs:', error);
@@ -32,11 +34,46 @@ const CertificateIssueForm = () => {
         fetchJobs();
     }, []);
 
-    const handleChange = (e) => {
+    const handleChange = async (e) => {
+        const { name, value } = e.target;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value,
+            [name]: value,
         });
+        // If jobId changes, fetch applicants for that job
+        if (name === 'jobId' && value) {
+            try {
+                const response = await getJobApplications(value);
+                const apps = Array.isArray(response.data) ? response.data : response.data.applications || [];
+                setApplicants(apps);
+                setFormData(f => ({ ...f, userId: '', skillId: '' }));
+                setUserSkills([]);
+            } catch (err) {
+                setApplicants([]);
+                setUserSkills([]);
+            }
+        }
+        if (name === 'jobId' && !value) {
+            setApplicants([]);
+            setUserSkills([]);
+            setFormData(f => ({ ...f, userId: '', skillId: '' }));
+        }
+        // If userId changes, fetch user skills
+        if (name === 'userId' && value) {
+            try {
+                const response = await getUserSkills(value);
+                const skills = Array.isArray(response.data) ? response.data : response.data.skills || [];
+                setUserSkills(skills);
+                setFormData(f => ({ ...f, skillId: '' }));
+            } catch (err) {
+                setUserSkills([]);
+                setFormData(f => ({ ...f, skillId: '' }));
+            }
+        }
+        if (name === 'userId' && !value) {
+            setUserSkills([]);
+            setFormData(f => ({ ...f, skillId: '' }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -73,6 +110,7 @@ const CertificateIssueForm = () => {
                     <label className="block text-gray-700 mb-2" htmlFor="jobId">
                         Select Job
                     </label>
+                    <p className="text-xs text-gray-500 mb-1">Example: "MEAN STACK Development"</p>
                     <select
                         id="jobId"
                         name="jobId"
@@ -92,40 +130,57 @@ const CertificateIssueForm = () => {
 
                 <div className="mb-4">
                     <label className="block text-gray-700 mb-2" htmlFor="userId">
-                        User ID
+                        Select User
                     </label>
-                    <input
-                        type="text"
+                    <p className="text-xs text-gray-500 mb-1">Example: "Amit Kumar (amit@email.com)"</p>
+                    <select
                         id="userId"
                         name="userId"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600"
                         value={formData.userId}
                         onChange={handleChange}
-                        placeholder="Enter user ID"
                         required
-                    />
+                        disabled={!formData.jobId || applicants.length === 0}
+                    >
+                        <option value="">Select a user</option>
+                        {applicants.map((app) => (
+                            app.user ? (
+                                <option key={app.user._id} value={app.user._id}>
+                                    {app.user.name} ({app.user.email})
+                                </option>
+                            ) : null
+                        ))}
+                    </select>
                 </div>
 
                 <div className="mb-4">
-                    <label className="block text-gray-700 mb-2" htmlFor="skillName">
-                        Skill Name
+                    <label className="block text-gray-700 mb-2" htmlFor="skillId">
+                        Select Skill
                     </label>
-                    <input
-                        type="text"
-                        id="skillName"
-                        name="skillName"
+                    <p className="text-xs text-gray-500 mb-1">Select a skill of the user for this certificate</p>
+                    <select
+                        id="skillId"
+                        name="skillId"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                        value={formData.skillName}
+                        value={formData.skillId}
                         onChange={handleChange}
-                        placeholder="e.g. JavaScript, Blockchain"
                         required
-                    />
+                        disabled={!formData.userId || userSkills.length === 0}
+                    >
+                        <option value="">Select a skill</option>
+                        {userSkills.map((skill) => (
+                            <option key={skill._id} value={skill._id}>
+                                {skill.name} (Level: {skill.level})
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className="mb-4">
                     <label className="block text-gray-700 mb-2" htmlFor="title">
                         Certificate Title
                     </label>
+                    <p className="text-xs text-gray-500 mb-1">Example: "JavaScript Developer Certificate"</p>
                     <input
                         type="text"
                         id="title"
@@ -142,6 +197,7 @@ const CertificateIssueForm = () => {
                     <label className="block text-gray-700 mb-2" htmlFor="description">
                         Description
                     </label>
+                    <p className="text-xs text-gray-500 mb-1">Example: "Awarded for outstanding performance in JavaScript project."</p>
                     <textarea
                         id="description"
                         name="description"

@@ -183,4 +183,14 @@ export const endorseSkill = async (req, res) => {
     }
 };
 
+export const getSkillsByUser = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const skills = await Skill.find({ owner: userId });
+        res.json({ skills });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 

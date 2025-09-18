@@ -33,7 +33,12 @@ const userSchema = new mongoose.Schema({
     appliedJobs: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "AppliedJob"
-    }]
+    }],
+    ethAddress: {
+        type: String,
+        required: false, // Set to true if you want to make it mandatory
+        trim: true
+    }
 
 }, {
     timestamps: true

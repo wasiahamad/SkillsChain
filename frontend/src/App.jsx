@@ -24,6 +24,8 @@ import JobDetails from './pages/User/JobDetails';
 import UserApplications from './pages/User/Applications';
 import UserCertificates from './pages/User/Certificates';
 import UserDashboardPage from './pages/User/Dashboard';
+import UserProfile from './pages/User/Profile';
+import ProfileEdit from './pages/User/ProfileEdit';
 import SkillFormPage from './pages/User/SkillFormPage';
 import SkillEditPage from './pages/User/SkillEditPage';
 import JobApplyPage from './pages/User/JobApplyPage';
@@ -38,6 +40,7 @@ import JobApplicationsPage from './pages/Employer/JobApplicationsPage';
 import ApplicationStatusUpdate from './pages/Employer/ApplicationStatusUpdate';
 import CertificateIssue from './pages/Employer/CertificateIssue';
 import EmployerDashboardPage from './pages/Employer/Dashboard';
+import EmployerProfile from './pages/Employer/Profile';
 
 // Certificate Verification
 import CertificateVerify from './pages/Certificates/Verify';
@@ -95,6 +98,16 @@ const AppLayout = () => {
             <Route path="/certificates/verify/:certificateId" element={<CertificateVerify />} />
 
             {/* User Routes */}
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile/edit" element={
+              <ProtectedRoute>
+                <ProfileEdit />
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <UserDashboardPage />
@@ -142,6 +155,11 @@ const AppLayout = () => {
             } />
 
             {/* Employer Routes */}
+            <Route path="/employer/profile" element={
+              <ProtectedRoute requireEmployer>
+                <EmployerProfile />
+              </ProtectedRoute>
+            } />
             <Route path="/employer/dashboard" element={
               <ProtectedRoute requireEmployer>
                 <EmployerDashboardPage />

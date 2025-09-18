@@ -4,7 +4,8 @@ import {
   getUserSkills,
   updateSkill,
   deleteSkill,
-  endorseSkill
+  endorseSkill,
+  getSkillsByUser
 } from "../controllers/skillController.js";
 import { protectUser } from "../middlewares/authMiddleware.js"; // for authentication
 
@@ -32,5 +33,10 @@ router.delete("/:skillId", protectUser, deleteSkill);
 
 // POST /api/skills/:id/endorse
 router.post("/:id/endorse", protectUser, endorseSkill);
+
+// @route   GET /api/skills/user/:userId
+// @desc    Get skills by user ID
+// @access  Public
+router.get("/user/:userId", getSkillsByUser);
 
 export default router;

@@ -32,7 +32,7 @@ export const employerRegister = (userData) => api.post('/employers/register', us
 // User APIs
 export const getUserProfile = () => api.get('/users/profile');
 export const updateUserProfile = (userData) => api.put('/users/profile', userData);
-export const getUserSkills = () => api.get('/skills');
+export const getUserSkills = (userId) => api.get(`/skills/user/${userId}`);
 export const addUserSkill = (skillData) => api.post('/skills', skillData);
 export const updateUserSkill = (id, skillData) => api.put(`/skills/${id}`, skillData);
 export const deleteUserSkill = (id) => api.delete(`/skills/${id}`);
@@ -50,12 +50,13 @@ export const updateJob = (id, jobData) => api.put(`/jobs/${id}`, jobData);
 export const deleteJob = (id) => api.delete(`/jobs/${id}`);
 export const getEmployerApplications = () => api.get(`/applications`);
 export const updateApplicationStatus = (id, status) => api.put(`/applications/status/${id}`, { status });
-export const issueCertificate = (certData) => api.post('/certificates', certData);
+export const issueCertificate = (certData) => api.post('/certificates/issue', certData);
 export const getJobApplications = (jobId) => api.get(`/applications/job/${jobId}`);
 
 // Common APIs
 export const getJobDetails = (jobId) => api.get(`/jobs/${jobId}`);
 export const applyForJob = (jobId, coverLetter) => api.post(`/applications/apply`, { coverLetter, jobId });
 export const verifyCertificate = (id) => api.get(`/certificates/verify/${id}`);
+export const getUserCertificates = () => api.get('/certificates/user');
 export const getAllJobs = (filters) => api.get('/jobs', { params: filters });
 export default api;
