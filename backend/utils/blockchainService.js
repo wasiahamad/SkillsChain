@@ -21,8 +21,14 @@ const issueBlockchainCertificate = async (toAddress, certHash) => {
     const result = await certificateContract.methods
       .issueCertificate(toAddress, certHash)
       .send({ from: accounts[0], gas: 3000000 });
-    
-    return result;
+
+    // Get the certificate ID from the event emitted by the contract
+    // Assumes event CertificateIssued(uint256 certificateId, ...)
+    let certificateId = null;
+    if (result.events && result.events.CertificateIssued && result.events.CertificateIssued.returnValues) {
+      certificateId = result.events.CertificateIssued.returnValues.certificateId;
+    }
+    return { transactionHash: result.transactionHash, certificateId };
   } catch (error) {
     console.error('Error issuing certificate on blockchain:', error);
     throw new Error('Failed to issue certificate on blockchain');

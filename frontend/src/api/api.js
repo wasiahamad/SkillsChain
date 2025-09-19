@@ -56,7 +56,7 @@ export const getJobApplications = (jobId) => api.get(`/applications/job/${jobId}
 // Common APIs
 export const getJobDetails = (jobId) => api.get(`/jobs/${jobId}`);
 export const applyForJob = (jobId, coverLetter) => api.post(`/applications/apply`, { coverLetter, jobId });
-export const verifyCertificate = (id) => api.get(`/certificates/verify/${id}`);
+export const verifyCertificate = (certificateId) => api.get(`/certificates/verify/${certificateId}`);
 export const getUserCertificates = () => api.get('/certificates/user');
 export const getAllJobs = (filters) => api.get('/jobs', { params: filters });
 export default api;

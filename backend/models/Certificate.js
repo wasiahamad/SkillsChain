@@ -25,6 +25,11 @@ const certificateSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
+    blockchainCertificateId: {
+        type: String,
+        required: false,
+        index: true
+    },
     fileUrl: {
         type: String
     },

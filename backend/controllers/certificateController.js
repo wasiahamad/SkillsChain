@@ -1,5 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { v2 as cloudinary } from 'cloudinary';
 import Certificate from '../models/Certificate.js';
 import User from '../models/User.js';
@@ -53,7 +57,7 @@ const issueCertificate = async (req, res) => {
     );
 
     // Only proceed if blockchainResult is valid and certHash is not null
-    if (!blockchainResult || !certHash) {
+    if (!blockchainResult || !blockchainResult.certificateId) {
       return res.status(500).json({ message: 'Blockchain certificate issue failed.' });
     }
 
@@ -65,7 +69,9 @@ const issueCertificate = async (req, res) => {
       skill: skillId,
       description,
       expirationDate,
-      blockchainHash: certHash
+      blockchainHash: certHash,
+      transactionHash: blockchainResult.transactionHash,
+      blockchainCertificateId: blockchainResult.certificateId
     });
     
     // Generate PDF certificate
@@ -80,7 +86,7 @@ const issueCertificate = async (req, res) => {
       issueDate: certificate.issueDate,
       issuerName: req.employer.companyName,
       certificateId: certificate._id,
-      verificationUrl: `${process.env.FRONTEND_URL}/verify-certificate/${certificate._id}`
+      verificationUrl: `${process.env.FRONTEND_URL}/certificates/verify/${certificate._id}`
     }, pdfPath);
     
     // Upload PDF to Cloudinary
@@ -92,7 +98,7 @@ const issueCertificate = async (req, res) => {
     
     // Update certificate with file URL
     certificate.fileUrl = uploadResult.secure_url;
-    certificate.verificationUrl = `${process.env.FRONTEND_URL}/verify-certificate/${certificate._id}`;
+    certificate.verificationUrl = `${process.env.FRONTEND_URL}/certificates/verify/${certificate._id}`;
     await certificate.save();
     
     // Add certificate to user's profile
@@ -127,19 +133,31 @@ const verifyCertificate = async (req, res) => {
       .populate('issuedTo', 'name email')
       .populate('issuedBy', 'companyName')
       .populate('skill', 'name level');
-    
+
     if (!certificate) {
       return res.status(404).json({ message: 'Certificate not found' });
     }
-    
-    // Verify on blockchain
-    const blockchainVerification = await verifyBlockchainCertificate(certificate.blockchainHash);
-    
+
+    if (!certificate.blockchainCertificateId) {
+      return res.status(400).json({ message: 'Certificate does not have a blockchain certificate ID.' });
+    }
+
+    let blockchainVerification = null;
+    try {
+      blockchainVerification = await verifyBlockchainCertificate(certificate.blockchainCertificateId);
+    } catch (err) {
+      return res.status(500).json({ message: 'Blockchain verification failed.', error: err.message });
+    }
+
     res.json({
       certificate,
       blockchainVerification: {
         verified: blockchainVerification !== null,
         details: blockchainVerification
+      },
+      emailVerification: {
+        verified: certificate.verified,
+        details: certificate.verificationDetails
       }
     });
   } catch (error) {

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getUserSkills, deleteUserSkill, endorseUserSkill } from "../../api/api";
 import Loader from "../Common/Loader";
+import { useAuth } from '../../context/AuthContext';
 
 const SkillList = () => {
+    const { user } = useAuth();
     const [skills, setSkills] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -17,8 +19,13 @@ const SkillList = () => {
 
     useEffect(() => {
         const fetchSkills = async () => {
+            if (!user || !user._id) {
+                setError("User not found. Please login again.");
+                setLoading(false);
+                return;
+            }
             try {
-                const response = await getUserSkills();
+                const response = await getUserSkills(user._id);
                 setSkills(response.data.skills || []);
             } catch (err) {
                 setError("Failed to fetch skills");
@@ -27,9 +34,8 @@ const SkillList = () => {
                 setLoading(false);
             }
         };
-
         fetchSkills();
-    }, []);
+    }, [user]);
 
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this skill?")) {
