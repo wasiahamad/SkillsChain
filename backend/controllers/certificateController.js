@@ -118,7 +118,15 @@ const issueCertificate = async (req, res) => {
     // Clean up local PDF file
     fs.unlinkSync(pdfPath);
     
-    res.status(201).json(certificate);
+    // Emit certificate issued event
+    req.app.emit('CertificateIssued', certificate._id, userId, certHash);
+    
+    res.status(201).json({
+      message: 'Certificate issued successfully.',
+      success: true,
+      certificate,
+      blockchainResult
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

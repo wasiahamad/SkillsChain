@@ -13,12 +13,12 @@ contract Certificate {
     mapping(uint => Cert) public certificates;
     uint public certCount;
 
-    event CertificateIssued(uint id, string title, address issuedTo, address issuedBy);
+    event CertificateIssued(uint256 certificateId, address recipient, string name, string course, uint256 issueDate);
 
     function issueCertificate(address _to, string memory _title) public {
         certCount++;
         certificates[certCount] = Cert(certCount, _title, _to, msg.sender, block.timestamp);
-        emit CertificateIssued(certCount, _title, _to, msg.sender);
+        emit CertificateIssued(certCount, _to, _title, "", block.timestamp);
     }
 
     // Get the title (string) for a certificate
@@ -26,4 +26,3 @@ contract Certificate {
         return certificates[_id].title;
     }
 }
-            // REMOVED verifyCertificate function. Use mapping getter and getCertificateTitle instead.

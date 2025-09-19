@@ -6,26 +6,32 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "id",
+          "name": "certificateId",
           "type": "uint256"
         },
         {
           "indexed": false,
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
           "internalType": "string",
-          "name": "title",
+          "name": "name",
           "type": "string"
         },
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "issuedTo",
-          "type": "address"
+          "internalType": "string",
+          "name": "course",
+          "type": "string"
         },
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "issuedBy",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "issueDate",
+          "type": "uint256"
         }
       ],
       "name": "CertificateIssued",
@@ -121,5 +127,5 @@
       "type": "function"
     }
   ],
-  "address": "0x67bC63678767A7a5dBe4EAF42a702B9f5D3dd580"
+  "address": "0x5385E2AD13021DCB788d4B1Ed71f49aa7a00c9Ab"
 }
